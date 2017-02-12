@@ -1,5 +1,4 @@
 const http = require('http');
-const io = require('socket.io');
 const WebSocketServer = require('websocket').server;
 const fs = require('fs');
 const request = require('request');
