@@ -31,9 +31,15 @@ const server = http.createServer(app);
 
 const webhookToken = 'flock_1008288489-1660465283';
 
-server.listen(process.env.PORT || 5000, function () {
-  console.log('MightyFlock app listening on port 9745!')
+server.listen(port, function () {
+  console.log('MightyFlock app listening on port: ' + port)
 });
+
+flock.appId = "d4ff7061-f575-4bc6-a46b-4ea4a463c8e0";
+flock.appSecret = "caa05b4d-e500-4720-b443-3b1c004f5e16";
+
+app.use(flock.events.tokenVerifier);
+app.post('/events', flock.events.listener);
 
 const wsServer = new WebSocketServer({
   httpServer: server,
@@ -48,26 +54,26 @@ app.use(cors());
 
 app.use('/', express.static(__dirname));
 
-app.get('/authresponse', (req, res) => {
+app.get('/authresponse', function (req, res) {
   res.redirect(301, `/?${qs.stringify(req.query)}`);
 });
 
-app.get('/notifications', (req, res) => {
+app.get('/notifications', function (req, res) {
   readFile('alexa.txt', function (text) {
     res.send(text.trim());
     // writeToFile('alexa.txt', '');
   });
 });
 
-app.get('/mp3', (req, res) => {
+app.get('/mp3', function (req, res) {
   res.sendFile('askFlock.mp3' , { root : __dirname});
 });
 
-app.post('/audio', upload.single('data'), (req, res) => {
+app.post('/audio', upload.single('data'), function (req, res) {
   res.json(req.file);
 });
 
-app.get('/parse-m3u', (req, res) => {
+app.get('/parse-m3u', function (req, res) {
   const m3uUrl = req.query.url;
   console.log(m3uUrl)
 
@@ -77,7 +83,7 @@ app.get('/parse-m3u', (req, res) => {
 
   const urls = [];
 
-  request(m3uUrl, (error, response, bodyResponse) => {
+  request(m3uUrl, function (error, response, bodyResponse) {
     console.log(bodyResponse, m3uUrl)
     if (bodyResponse) {
       urls.push(bodyResponse);
@@ -87,13 +93,7 @@ app.get('/parse-m3u', (req, res) => {
   });
 });
 
-flock.appId = "d4ff7061-f575-4bc6-a46b-4ea4a463c8e0";
-flock.appSecret = "caa05b4d-e500-4720-b443-3b1c004f5e16";
-
-app.use(flock.events.tokenVerifier);
-app.post('/events', flock.events.listener);
-
-flock.events.on('app.install', (event, callback) => {
+flock.events.on('app.install', function (event, callback) {
   callback(null, {status: 200});
   store.saveUserToken(event.userId, event.token);
 
@@ -101,14 +101,14 @@ flock.events.on('app.install', (event, callback) => {
     if (error) {
       console.log('error: ', error);
     } else {
-      response.forEach((contact) => {
+      response.forEach(function (contact) {
         store.saveUserInfo({userId: contact.id, userName: `${contact.firstName} ${contact.lastName}`});
       });
     }
   });
 });
 
-flock.events.on('client.slashCommand', (event, callback) => {
+flock.events.on('client.slashCommand', function (event, callback) {
   if (event.command === 'wuddup') {
     wuddup(event, callback);
   }
@@ -118,7 +118,7 @@ flock.events.on('client.slashCommand', (event, callback) => {
   }
 });
 
-flock.events.on(undefined, (event, callback) => {
+flock.events.on(undefined, function (event, callback) {
   webhook(event)
 });
 

@@ -4722,8 +4722,8 @@ var sendArrayBuffer = __webpack_require__(7);
 var parseQuery = __webpack_require__(6);
 
 var W3CWebSocket = __webpack_require__(9).w3cwebsocket;
-var client = new W3CWebSocket('wss://localhost', 'echo-protocol');
-
+var port = 9745;
+var client = new W3CWebSocket('wss://799ee29d.ngrok.io' + port, 'echo-protocol');
 var avs = new AVS({
   debug: true,
   clientId: 'amzn1.application-oa2-client.0a53180dc48f463199058cb7f8433818',
@@ -4731,7 +4731,7 @@ var avs = new AVS({
   refreshToken: 'Atzr|IwEBIFlKfVnAgT2MAyI4M2vn602Zrw0LHglpMml5A1OgP_uubu-06-O7zszutK-MLp32ydCR706NVL1g43S-kbKoYOW5zjU_G4kyszKCs-gowxCR7LPVj-Sk6xrok0WicTrLAznTUbv0wQ90M-qhYnAWhSBYjZ_xkomKXnNYY3E1JjGjIP6bn7n2_BMtZVuaQ7ONjBgQGc_1SNfNy6K2PKHY_lqbDVAHf1JCJGoVi_SzNI0ofy-Ls58t_zjkelA0fwfyBo8J5neIruXUY_egqazg88qC9Poxzk1Y4umm11GOg1qm2FilU8zWSqz7QgIrMgquHtPEeXhQiVBNa4s1dtGcSb9gDUa3Mnp7PyuBKRgR2JiPaZpKJKZdmyDjw1kUxtB7fmQ1yCBfbP7pnzu-TgxmzztpPWUw5LBly-vC9nIztd259jRLcUZrj85Us-rrQecWj31fmjSg1C1rTmQ5oZjZugAYFGte3o_PMxAFy4UhQTLa0IKBqd0Z_rxMsfFpZ92hDX5PnVat1vpSKFqaY8zp9sWgdxn_PVZuQN0PF6csYXdrFQ',
   deviceId: 'mighty_flock_device',
   deviceSerialNumber: 123,
-  redirectUri: 'https://localhost/authresponse'
+  redirectUri: 'https://799ee29d.ngrok.io:' + port + '/authresponse'
 });
 window.avs = avs;
 
@@ -4742,7 +4742,7 @@ fileReader.onload = function () {
 };
 
 var xhr = new XMLHttpRequest();
-xhr.open('GET', "https://localhost/mp3", true);
+xhr.open('GET', 'https://799ee29d.ngrok.io:' + port + '/mp3', true);
 xhr.responseType = 'blob';
 xhr.onload = function (e) {
   if (this.status == 200) {
