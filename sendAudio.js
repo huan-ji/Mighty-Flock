@@ -1,4 +1,4 @@
-function sendAudio(dataView) {
+const sendAudio = function (dataView) {
   avs.sendAudio(dataView)
   .then(({xhr, response}) => {
 
@@ -103,5 +103,24 @@ function sendAudio(dataView) {
     console.error(error);
   });
 };
+
+function logAudioBlob(blob, message) {
+  return new Promise((resolve, reject) => {
+    const a = document.createElement('a');
+    const aDownload = document.createElement('a');
+    const url = window.URL.createObjectURL(blob);
+    const ext = blob.type.indexOf('mpeg') > -1 ? 'mp3' : 'wav';
+    const filename = `${Date.now()}.${ext}`;
+    a.href = url;
+    a.target = '_blank';
+    aDownload.href = url;
+    a.textContent = filename;
+    aDownload.download = filename;
+    aDownload.textContent = `download`;
+
+    audioLogOutput.innerHTML = `<li>${message}: ${a.outerHTML} ${aDownload.outerHTML}</li>` +audioLogOutput.innerHTML;
+    resolve(blob);
+  });
+}
 
 module.exports = sendAudio;

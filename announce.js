@@ -1,7 +1,6 @@
 const flock = require('flockos');
 const store = require('./store');
 const writeToFile = require('./writeToFile.js');
-// const sendAudio = require('./sendAudio.js');
 
 var announce = function (event, clients) {
   writeToFile('alexa.txt', event.text);

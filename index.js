@@ -1,6 +1,7 @@
 const AVS = require('alexa-voice-service');
 const player = AVS.Player;
-const sendAudio = require('./sendAudio.js')
+const sendAudio = require('./sendAudio.js');
+const sendArrayBuffer = require('./sendArrayBuffer.js');
 
 const W3CWebSocket = require('websocket').w3cwebsocket;
 const client = new W3CWebSocket('ws://localhost:9745/', 'echo-protocol');
@@ -15,6 +16,23 @@ const avs = new AVS({
   redirectUri: `https://799ee29d.ngrok.io/authresponse`
 });
 window.avs = avs;
+
+var flockArrayBuffer;
+var fileReader  = new FileReader;
+fileReader.onload = function () {
+  flockArrayBuffer = this.result;
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "https://799ee29d.ngrok.io/mp3", true);
+xhr.responseType = 'blob';
+xhr.onload = function(e) {
+  if (this.status == 200) {
+    var myBlob = this.response;
+    fileReader.readAsArrayBuffer(myBlob);
+  }
+};
+xhr.send();
 
 avs.on(AVS.EventTypes.TOKEN_SET, () => {
   // loginBtn.disabled = true;
@@ -146,9 +164,9 @@ const replayAudio = document.getElementById('replayAudio');
 //   }
 // });
 
-// avs.refreshToken()
-// .then(() => avs.requestMic())
-// .catch(() => {});
+avs.refreshToken()
+.then(() => avs.requestMic())
+.catch(() => {});
 
 // loginBtn.addEventListener('click', login);
 
@@ -252,6 +270,6 @@ client.onclose = function() {
 
 client.onmessage = function(e) {
   if (e.data === 'notification') {
-    
+    sendAudio(new DataView(flockArrayBuffer));
   }
 };

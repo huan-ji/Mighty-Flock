@@ -57,6 +57,10 @@ app.get('/notifications', (req, res) => {
   });
 });
 
+app.get('/mp3', (req, res) => {
+  res.sendFile('askFlock.mp3' , { root : __dirname});
+});
+
 app.post('/audio', upload.single('data'), (req, res) => {
   res.json(req.file);
 });
