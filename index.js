@@ -1,18 +1,24 @@
 const AVS = require('alexa-voice-service');
 const player = AVS.Player;
+const sendAudio = require('./sendAudio.js')
+
+const W3CWebSocket = require('websocket').w3cwebsocket;
+const client = new W3CWebSocket('ws://localhost:9745/', 'echo-protocol');
 
 const avs = new AVS({
   debug: true,
   clientId: 'amzn1.application-oa2-client.0a53180dc48f463199058cb7f8433818',
+  clientSecret: '3c49fc830be462b58b6d02736e97d450d7a6868aa3663c8c0c1de324d2710ed6',
+  refreshToken: 'Atzr|IwEBIFlKfVnAgT2MAyI4M2vn602Zrw0LHglpMml5A1OgP_uubu-06-O7zszutK-MLp32ydCR706NVL1g43S-kbKoYOW5zjU_G4kyszKCs-gowxCR7LPVj-Sk6xrok0WicTrLAznTUbv0wQ90M-qhYnAWhSBYjZ_xkomKXnNYY3E1JjGjIP6bn7n2_BMtZVuaQ7ONjBgQGc_1SNfNy6K2PKHY_lqbDVAHf1JCJGoVi_SzNI0ofy-Ls58t_zjkelA0fwfyBo8J5neIruXUY_egqazg88qC9Poxzk1Y4umm11GOg1qm2FilU8zWSqz7QgIrMgquHtPEeXhQiVBNa4s1dtGcSb9gDUa3Mnp7PyuBKRgR2JiPaZpKJKZdmyDjw1kUxtB7fmQ1yCBfbP7pnzu-TgxmzztpPWUw5LBly-vC9nIztd259jRLcUZrj85Us-rrQecWj31fmjSg1C1rTmQ5oZjZugAYFGte3o_PMxAFy4UhQTLa0IKBqd0Z_rxMsfFpZ92hDX5PnVat1vpSKFqaY8zp9sWgdxn_PVZuQN0PF6csYXdrFQ',
   deviceId: 'mighty_flock_device',
   deviceSerialNumber: 123,
-  redirectUri: `https://00f19f6c.ngrok.io/authresponse`
+  redirectUri: `https://799ee29d.ngrok.io/authresponse`
 });
 window.avs = avs;
 
 avs.on(AVS.EventTypes.TOKEN_SET, () => {
-  loginBtn.disabled = true;
-  logoutBtn.disabled = false;
+  // loginBtn.disabled = true;
+  // logoutBtn.disabled = false;
   startRecording.disabled = false;
   stopRecording.disabled = true;
 });
@@ -27,12 +33,12 @@ avs.on(AVS.EventTypes.RECORD_STOP, () => {
   stopRecording.disabled = true;
 });
 
-avs.on(AVS.EventTypes.LOGOUT, () => {
-  loginBtn.disabled = false;
-  logoutBtn.disabled = true;
-  startRecording.disabled = true;
-  stopRecording.disabled = true;
-});
+// avs.on(AVS.EventTypes.LOGOUT, () => {
+//   loginBtn.disabled = false;
+//   logoutBtn.disabled = true;
+//   startRecording.disabled = true;
+//   stopRecording.disabled = true;
+// });
 
 avs.on(AVS.EventTypes.TOKEN_INVALID, () => {
   avs.logout()
@@ -107,8 +113,8 @@ function logAudioBlob(blob, message) {
   });
 }
 
-const loginBtn = document.getElementById('login');
-const logoutBtn = document.getElementById('logout');
+// const loginBtn = document.getElementById('login');
+// const logoutBtn = document.getElementById('logout');
 const logOutput = document.getElementById('log');
 const audioLogOutput = document.getElementById('audioLog');
 const startRecording = document.getElementById('startRecording');
@@ -118,55 +124,52 @@ const pauseAudio = document.getElementById('pauseAudio');
 const playAudio = document.getElementById('playAudio');
 const replayAudio = document.getElementById('replayAudio');
 
-/*
 // If using client secret
-avs.getCodeFromUrl()
- .then(code => avs.getTokenFromCode(code))
-.then(token => localStorage.setItem('token', token))
-.then(refreshToken => localStorage.setItem('refreshToken', refreshToken))
-.then(() => avs.requestMic())
-.then(() => avs.refreshToken())
-.catch(() => {
+// avs.getCodeFromUrl()
+//   .then(code => avs.getTokenFromCode(code))
+//   .then(token => localStorage.setItem('token', token))
+//   .then(refreshToken => localStorage.setItem('refreshToken', refreshToken))
+//   .then(() => avs.requestMic())
+//   .then(() => avs.refreshToken())
+//   .catch(() => {});
 
-});
-*/
+// avs.getTokenFromUrl()
+// .then(() => avs.getToken())
+// .then(token => localStorage.setItem('token', token))
+// .then(() => avs.requestMic())
+// .catch(() => {
+//   const cachedToken = localStorage.getItem('token');
+//
+//   if (cachedToken) {
+//     avs.setToken(cachedToken);
+//     return avs.requestMic();
+//   }
+// });
 
-avs.getTokenFromUrl()
-.then(() => avs.getToken())
-.then(token => localStorage.setItem('token', token))
-.then(() => avs.requestMic())
-.catch(() => {
-  const cachedToken = localStorage.getItem('token');
+// avs.refreshToken()
+// .then(() => avs.requestMic())
+// .catch(() => {});
 
-  if (cachedToken) {
-    avs.setToken(cachedToken);
-    return avs.requestMic();
-  }
-});
-
-loginBtn.addEventListener('click', login);
+// loginBtn.addEventListener('click', login);
 
 function login(event) {
-  return avs.login()
-  .then(() => avs.requestMic())
-  .catch(() => {});
+  // return avs.login()
+  // .then(() => avs.requestMic())
+  // .catch(() => {});
 
-  /*
   // If using client secret
   avs.login({responseType: 'code'})
-  .then(() => avs.requestMic())
-  .catch(() => {});
-  */
+    .then(() => avs.requestMic())
+    .catch(() => {});
 }
 
-logoutBtn.addEventListener('click', logout);
-
+// logoutBtn.addEventListener('click', logout);
 function logout() {
   return avs.logout()
   .then(() => {
     localStorage.removeItem('token');
-    window.location.hash = '';
-  });
+      window.location.hash = '';
+    });
 }
 
 startRecording.addEventListener('click', () => {
@@ -186,109 +189,7 @@ stopRecording.addEventListener('click', () => {
 
         var ab = false;
     //sendBlob(blob);
-    avs.sendAudio(dataView)
-    .then(({xhr, response}) => {
-
-      var promises = [];
-      var audioMap = {};
-      var directives = null;
-
-      if (response.multipart.length) {
-        response.multipart.forEach(multipart => {
-          let body = multipart.body;
-          if (multipart.headers && multipart.headers['Content-Type'] === 'application/json') {
-            try {
-              body = JSON.parse(body);
-            } catch(error) {
-              console.error(error);
-            }
-
-            if (body && body.messageBody && body.messageBody.directives) {
-              directives = body.messageBody.directives;
-            }
-          } else if (multipart.headers['Content-Type'] === 'audio/mpeg') {
-            const start = multipart.meta.body.byteOffset.start;
-            const end = multipart.meta.body.byteOffset.end;
-
-            /**
-             * Not sure if bug in buffer module or in http message parser
-             * because it's joining arraybuffers so I have to this to
-             * seperate them out.
-             */
-            var slicedBody = xhr.response.slice(start, end);
-
-            //promises.push(avs.player.enqueue(slicedBody));
-            audioMap[multipart.headers['Content-ID']] = slicedBody;
-          }
-        });
-
-        function findAudioFromContentId(contentId) {
-          contentId = contentId.replace('cid:', '');
-          for (var key in audioMap) {
-            if (key.indexOf(contentId) > -1) {
-              return audioMap[key];
-            }
-          }
-        }
-
-        directives.forEach(directive => {
-          if (directive.namespace === 'SpeechSynthesizer') {
-            if (directive.name === 'speak') {
-              const contentId = directive.payload.audioContent;
-              const audio = findAudioFromContentId(contentId);
-              if (audio) {
-                avs.audioToBlob(audio)
-                .then(blob => logAudioBlob(blob, 'RESPONSE'));
-                promises.push(avs.player.enqueue(audio));
-              }
-            }
-          } else if (directive.namespace === 'AudioPlayer') {
-            if (directive.name === 'play') {
-              const streams = directive.payload.audioItem.streams;
-              streams.forEach(stream => {
-                const streamUrl = stream.streamUrl;
-
-                const audio = findAudioFromContentId(streamUrl);
-                if (audio) {
-                  avs.audioToBlob(audio)
-                  .then(blob => logAudioBlob(blob, 'RESPONSE'));
-                  promises.push(avs.player.enqueue(audio));
-                } else if (streamUrl.indexOf('http') > -1) {
-                  const xhr = new XMLHttpRequest();
-                  const url = `/parse-m3u?url=${streamUrl.replace(/!.*$/, '')}`;
-                  xhr.open('GET', url, true);
-                  xhr.responseType = 'json';
-                  xhr.onload = (event) => {
-                    const urls = event.currentTarget.response;
-
-                    urls.forEach(url => {
-                      avs.player.enqueue(url);
-                    });
-                  };
-                  xhr.send();
-                }
-              });
-            } else if (directive.namespace === 'SpeechRecognizer') {
-              if (directive.name === 'listen') {
-                const timeout = directive.payload.timeoutIntervalInMillis;
-                // enable mic
-              }
-            }
-          }
-        });
-
-        if (promises.length) {
-          Promise.all(promises)
-         .then(() => {
-            avs.player.playQueue()
-          });
-        }
-      }
-
-    })
-    .catch(error => {
-      console.error(error);
-    });
+    sendAudio(dataView)
   });
 });
 
@@ -327,3 +228,30 @@ function sendBlob(blob) {
 
   xhr.send(fd);
 }
+
+client.onerror = function() {
+    console.log('Connection Error');
+};
+
+client.onopen = function() {
+    console.log('WebSocket Client Connected');
+    //
+    // function sendNumber() {
+    //     if (client.readyState === client.OPEN) {
+    //         var number = Math.round(Math.random() * 0xFFFFFF);
+    //         client.send(number.toString());
+    //         setTimeout(sendNumber, 1000);
+    //     }
+    // }
+    // sendNumber();
+};
+
+client.onclose = function() {
+  console.log('echo-protocol Client Closed');
+};
+
+client.onmessage = function(e) {
+  if (e.data === 'notification') {
+    
+  }
+};

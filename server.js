@@ -1,4 +1,5 @@
-const https = require('https');
+const http = require('http');
+const WebSocketServer = require('websocket').server;
 const fs = require('fs');
 const request = require('request');
 const flock = require('flockos');
@@ -21,12 +22,25 @@ const options = {
   // Make sure an error is not emitted on connection when the server certificate verification against the list of supplied CAs fails.
   rejectUnauthorized: false
 };
+const wuddup = require('./wuddup.js');
+const announce = require('./announce.js');
+const readFile = require('./readFile.js');
+const writeToFile = require('./writeToFile.js');
+const server = http.createServer(app);
 
-app.listen(port, function () {
+let clientCount = 0;
+let clients = {};
+
+server.listen(port, function () {
   console.log('MightyFlock app listening on port 9745!')
-})
+});
 
-app.use(bodyParser.urlencoded({ extended: true}))
+const wsServer = new WebSocketServer({
+  httpServer: server,
+  autoAcceptConnections: false
+});
+
+app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -34,6 +48,13 @@ app.use('/', express.static(__dirname));
 
 app.get('/authresponse', (req, res) => {
   res.redirect(301, `/?${qs.stringify(req.query)}`);
+});
+
+app.get('/notifications', (req, res) => {
+  readFile('alexa.txt', function (text) {
+    res.send(text.trim());
+    // writeToFile('alexa.txt', '');
+  });
 });
 
 app.post('/audio', upload.single('data'), (req, res) => {
@@ -62,35 +83,39 @@ app.get('/parse-m3u', (req, res) => {
 
 flock.appId = "d4ff7061-f575-4bc6-a46b-4ea4a463c8e0";
 flock.appSecret = "caa05b4d-e500-4720-b443-3b1c004f5e16";
-// since we use express, we can simply use the token verifier
-// middleware to ensure that all event tokens are valid
+
 app.use(flock.events.tokenVerifier);
+app.post('/events', flock.events.listener);
 
-// listen for events on /events
-app.post('/events', (req, res, next) => {
-    res.sendStatus(200);
-    next();
-}, flock.events.listener);
-
-// listen for app.install event, mapping of user id to tokens is saved
-// in the in-memory database
 flock.events.on('app.install', (event, res) => {
     console.log("MADE IT");
     store.saveUserToken(event.userId, event.token);
 });
 
 flock.events.on('client.slashCommand', (event, callback) => {
-    // handle slash command event here
-    // invoke the callback to send a response to the event
-    // callback(null, { text: 'Received your command' });
-    flock.callMethod('chat.sendMessage', store.getUserToken(event.userId), {
-        to: event.chat,
-        text: "wuddup",
-    }, (error, response) => {
-        if (!error) {
-            console.log(response);
-        } else {
-            console.log(error);
-        }
-    });
+  if (event.command === 'wuddup') {
+    wuddup(event, callback);
+  }
+
+  if (event.command === 'announce') {
+    announce(event, clients)
+  }
+});
+
+wsServer.on('request', function(request) {
+  var connection = request.accept('echo-protocol', request.origin);
+  console.log((new Date()) + ' Connection accepted.');
+
+  let id = clientCount++;
+  clients[id] = connection;
+
+  connection.on('message', function(message) {
+    if (message.type === 'utf8') {
+      console.log('Received Message: ' + message.utf8Data);
+      connection.sendUTF(message.utf8Data);
+    }
+  });
+  connection.on('close', function(reasonCode, description) {
+    console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+  });
 });
