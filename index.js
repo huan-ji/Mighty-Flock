@@ -2,9 +2,10 @@ const AVS = require('alexa-voice-service');
 const player = AVS.Player;
 const sendAudio = require('./sendAudio.js');
 const sendArrayBuffer = require('./sendArrayBuffer.js');
+const parseQuery = require('./parseQuery.js')
 
 const W3CWebSocket = require('websocket').w3cwebsocket;
-const client = new W3CWebSocket('ws://localhost:9745/', 'echo-protocol');
+const client = new W3CWebSocket('wss://799ee29d.ngrok.io:9745/', 'echo-protocol');
 
 const avs = new AVS({
   debug: true,
@@ -248,20 +249,14 @@ function sendBlob(blob) {
 }
 
 client.onerror = function() {
-    console.log('Connection Error');
+  console.log('Connection Error');
 };
 
 client.onopen = function() {
-    console.log('WebSocket Client Connected');
-    //
-    // function sendNumber() {
-    //     if (client.readyState === client.OPEN) {
-    //         var number = Math.round(Math.random() * 0xFFFFFF);
-    //         client.send(number.toString());
-    //         setTimeout(sendNumber, 1000);
-    //     }
-    // }
-    // sendNumber();
+  console.log('WebSocket Client Connected');
+  const queryParams = parseQuery(window.location.search);
+
+  client.send(queryParams.flockEvent);
 };
 
 client.onclose = function() {

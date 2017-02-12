@@ -1,13 +1,34 @@
 var fs = require('fs');
 var db = 'scraps.json';
 var userTokens = {};
+var userInfos = {};
 
 exports.getUserToken = function (userId) {
     return userTokens[userId];
 }
 
+exports.getUserInfo = function (userId) {
+    return userInfos[userId];
+}
+
+exports.getUserInfos = function (userId) {
+    return userInfos;
+}
+
+exports.getConnectionWithUserId = function (userId) {
+    return getUserInfo(userId).wsconnection;
+}
+
 exports.saveUserToken = function (userId, token) {
     userTokens[userId] = token;
+}
+
+exports.saveUserInfo = function (params, connection) {
+  var userId = params.userId;
+  var userInfo = {userName: params.userName, wsconnection: connection };
+  console.log(userInfo);
+
+  userInfos[userId] = userInfo;
 }
 
 var chats = {};
@@ -37,8 +58,10 @@ var readDatabase = function () {
     try {
         var stringContent = fs.readFileSync(db);
         var content = JSON.parse(stringContent);
+
         userTokens = content.userTokens;
         chats = content.chats;
+        userInfos = contents.userInfos;
     } catch (e) {
         console.log('Couldn\'t read db, starting empty.\nError:', e);
     }
@@ -46,7 +69,7 @@ var readDatabase = function () {
 
 var saveDatabase = function () {
     console.log('Saving db');
-    var stringContent = JSON.stringify({ userTokens: userTokens, chats: chats });
+    var stringContent = JSON.stringify({ userTokens: userTokens, chats: chats, userInfos: userInfos });
     fs.writeFileSync(db, stringContent);
 };
 

@@ -1,4 +1,5 @@
 const http = require('http');
+const io = require('socket.io');
 const WebSocketServer = require('websocket').server;
 const fs = require('fs');
 const request = require('request');
@@ -24,12 +25,12 @@ const options = {
 };
 const wuddup = require('./wuddup.js');
 const announce = require('./announce.js');
+const webhook = require('./webhook.js');
 const readFile = require('./readFile.js');
 const writeToFile = require('./writeToFile.js');
 const server = http.createServer(app);
 
-let clientCount = 0;
-let clients = {};
+const webhookToken = 'flock_1008288489-1660465283';
 
 server.listen(port, function () {
   console.log('MightyFlock app listening on port 9745!')
@@ -39,6 +40,8 @@ const wsServer = new WebSocketServer({
   httpServer: server,
   autoAcceptConnections: false
 });
+
+// io.connect('https://799ee29d.ngrok.io');
 
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
@@ -91,9 +94,19 @@ flock.appSecret = "caa05b4d-e500-4720-b443-3b1c004f5e16";
 app.use(flock.events.tokenVerifier);
 app.post('/events', flock.events.listener);
 
-flock.events.on('app.install', (event, res) => {
-    console.log("MADE IT");
-    store.saveUserToken(event.userId, event.token);
+flock.events.on('app.install', (event, callback) => {
+  callback(null, {status: 200});
+  store.saveUserToken(event.userId, event.token);
+
+  flock.roster.listContacts(event.token, null, function (error, response) {
+    if (error) {
+      console.log('error: ', error);
+    } else {
+      response.forEach((contact) => {
+        store.saveUserInfo({userId: contact.id, userName: `${contact.firstName} ${contact.lastName}`});
+      });
+    }
+  });
 });
 
 flock.events.on('client.slashCommand', (event, callback) => {
@@ -102,21 +115,32 @@ flock.events.on('client.slashCommand', (event, callback) => {
   }
 
   if (event.command === 'announce') {
-    announce(event, clients)
+    announce(event)
   }
 });
+
+flock.events.on(undefined, (event, callback) => {
+  webhook(event)
+});
+
+let clientCount = 0;
 
 wsServer.on('request', function(request) {
   var connection = request.accept('echo-protocol', request.origin);
   console.log((new Date()) + ' Connection accepted.');
 
-  let id = clientCount++;
-  clients[id] = connection;
-
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
-      console.log('Received Message: ' + message.utf8Data);
-      connection.sendUTF(message.utf8Data);
+      const string = message.utf8Data;
+      console.log('Received Message: ' + string);
+      const substring = string.substr(string.length - 19, 17);
+
+      if (substring === "appLauncherButton") {
+        const params = JSON.parse(string);
+        store.saveUserInfo(params, connection);
+      } else {
+        store.saveUserInfo({userId: clientCount++, userName: 'Unknown' + clientCount}, connection);
+      }
     }
   });
   connection.on('close', function(reasonCode, description) {

@@ -2,12 +2,16 @@ const flock = require('flockos');
 const store = require('./store');
 const writeToFile = require('./writeToFile.js');
 
-var announce = function (event, clients) {
+var announce = function (event) {
   writeToFile('alexa.txt', event.text);
-  for (var i in clients) {
-    // Send a message to the client with the message
-    clients[i].sendUTF('notification');
-  }
+
+  const userInfos = store.getUserInfos();
+  console.log(userInfos)
+  Object.keys(userInfos).forEach(function (userId) {
+    let userInfo = userInfos[userId];
+    console.log(userInfo)
+    userInfo.wsconnection.sendUTF('notification');
+  });
 }
 
 module.exports = announce;
