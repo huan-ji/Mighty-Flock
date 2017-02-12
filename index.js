@@ -5,7 +5,7 @@ const sendArrayBuffer = require('./sendArrayBuffer.js');
 const parseQuery = require('./parseQuery.js')
 
 const W3CWebSocket = require('websocket').w3cwebsocket;
-const client = new W3CWebSocket('wss://localhost:9745/', 'echo-protocol');
+const client = new W3CWebSocket('wss://localhost', 'echo-protocol');
 
 const avs = new AVS({
   debug: true,

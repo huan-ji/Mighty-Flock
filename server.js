@@ -31,7 +31,7 @@ const server = http.createServer(app);
 
 const webhookToken = 'flock_1008288489-1660465283';
 
-server.listen(port, function () {
+server.listen(process.env.PORT || 5000, function () {
   console.log('MightyFlock app listening on port 9745!')
 });
 
