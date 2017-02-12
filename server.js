@@ -30,7 +30,6 @@ const writeToFile = require('./writeToFile.js');
 const server = http.createServer(app);
 
 const webhookToken = 'flock_1008288489-1660465283';
-require('./index.js')
 
 server.listen(port, function () {
   console.log('MightyFlock app listening on port 9745!')

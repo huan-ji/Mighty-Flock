@@ -1,5 +1,7 @@
+var path = require('path');
+
 module.exports = {
-    entry: './server.js',
+    entry: './index.js',
     output: {
         path: './bin',
         filename: 'index.bundle.js'
@@ -7,13 +9,12 @@ module.exports = {
     module: {
          loaders: [{
              test: /\.js$/,
-             exclude: /node_modules/,
              loader: 'babel-loader'
          }]
      },
      resolve: {
-        modules: ['node_modules/'],
+        modules: [path.resolve(__dirname, '../'), 'node_modules/'],
         descriptionFiles: ['package.json'],
-        extensions : ['.js']
+        extensions: ['.webpack.js', '.web.js', '.js']
     }
 };
