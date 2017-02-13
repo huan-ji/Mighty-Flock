@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const qs = require('qs');
 const multer  = require('multer');
-const port = 9745;
+const port = process.env.port || 5000;
 const upload = multer({ dest: 'uploads/' });
 const app = express();
 const options = {
@@ -46,7 +46,7 @@ const wsServer = new WebSocketServer({
   autoAcceptConnections: false
 });
 
-// io.connect('https://799ee29d.ngrok.io');
+// io.connect('https://localhost');
 
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());

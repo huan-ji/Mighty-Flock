@@ -4713,7 +4713,7 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function(process) {
 
 var AVS = __webpack_require__(5);
 var player = AVS.Player;
@@ -4722,8 +4722,8 @@ var sendArrayBuffer = __webpack_require__(7);
 var parseQuery = __webpack_require__(6);
 
 var W3CWebSocket = __webpack_require__(9).w3cwebsocket;
-var port = 9745;
-var client = new W3CWebSocket('wss://799ee29d.ngrok.io' + port, 'echo-protocol');
+var port = process.env.port || 5000;
+var client = new W3CWebSocket('ws://localhost:' + port, 'echo-protocol');
 var avs = new AVS({
   debug: true,
   clientId: 'amzn1.application-oa2-client.0a53180dc48f463199058cb7f8433818',
@@ -4731,7 +4731,7 @@ var avs = new AVS({
   refreshToken: 'Atzr|IwEBIFlKfVnAgT2MAyI4M2vn602Zrw0LHglpMml5A1OgP_uubu-06-O7zszutK-MLp32ydCR706NVL1g43S-kbKoYOW5zjU_G4kyszKCs-gowxCR7LPVj-Sk6xrok0WicTrLAznTUbv0wQ90M-qhYnAWhSBYjZ_xkomKXnNYY3E1JjGjIP6bn7n2_BMtZVuaQ7ONjBgQGc_1SNfNy6K2PKHY_lqbDVAHf1JCJGoVi_SzNI0ofy-Ls58t_zjkelA0fwfyBo8J5neIruXUY_egqazg88qC9Poxzk1Y4umm11GOg1qm2FilU8zWSqz7QgIrMgquHtPEeXhQiVBNa4s1dtGcSb9gDUa3Mnp7PyuBKRgR2JiPaZpKJKZdmyDjw1kUxtB7fmQ1yCBfbP7pnzu-TgxmzztpPWUw5LBly-vC9nIztd259jRLcUZrj85Us-rrQecWj31fmjSg1C1rTmQ5oZjZugAYFGte3o_PMxAFy4UhQTLa0IKBqd0Z_rxMsfFpZ92hDX5PnVat1vpSKFqaY8zp9sWgdxn_PVZuQN0PF6csYXdrFQ',
   deviceId: 'mighty_flock_device',
   deviceSerialNumber: 123,
-  redirectUri: 'https://799ee29d.ngrok.io:' + port + '/authresponse'
+  redirectUri: 'https://localhost:' + port + '/authresponse'
 });
 window.avs = avs;
 
@@ -4742,7 +4742,7 @@ fileReader.onload = function () {
 };
 
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'https://799ee29d.ngrok.io:' + port + '/mp3', true);
+xhr.open('GET', 'https://localhost:' + port + '/mp3', true);
 xhr.responseType = 'blob';
 xhr.onload = function (e) {
   if (this.status == 200) {
@@ -4753,73 +4753,18 @@ xhr.onload = function (e) {
 xhr.send();
 
 avs.on(AVS.EventTypes.TOKEN_SET, function () {
-  // loginBtn.disabled = true;
-  // logoutBtn.disabled = false;
-  startRecording.disabled = false;
-  stopRecording.disabled = true;
+  startStopRecording.disabled = false;
 });
 
-avs.on(AVS.EventTypes.RECORD_START, function () {
-  startRecording.disabled = true;
-  stopRecording.disabled = false;
-});
+avs.player.on(AVS.Player.EventTypes.PLAY, function () {});
 
-avs.on(AVS.EventTypes.RECORD_STOP, function () {
-  startRecording.disabled = false;
-  stopRecording.disabled = true;
-});
+avs.player.on(AVS.Player.EventTypes.ENDED, function () {});
 
-// avs.on(AVS.EventTypes.LOGOUT, () => {
-//   loginBtn.disabled = false;
-//   logoutBtn.disabled = true;
-//   startRecording.disabled = true;
-//   stopRecording.disabled = true;
-// });
+avs.player.on(AVS.Player.EventTypes.STOP, function () {});
 
-avs.on(AVS.EventTypes.TOKEN_INVALID, function () {
-  avs.logout().then(login);
-});
+avs.player.on(AVS.Player.EventTypes.PAUSE, function () {});
 
-avs.on(AVS.EventTypes.LOG, log);
-avs.on(AVS.EventTypes.ERROR, logError);
-
-avs.player.on(AVS.Player.EventTypes.LOG, log);
-avs.player.on(AVS.Player.EventTypes.ERROR, logError);
-
-avs.player.on(AVS.Player.EventTypes.PLAY, function () {
-  playAudio.disabled = true;
-  replayAudio.disabled = true;
-  pauseAudio.disabled = false;
-  stopAudio.disabled = false;
-});
-
-avs.player.on(AVS.Player.EventTypes.ENDED, function () {
-  playAudio.disabled = true;
-  replayAudio.disabled = false;
-  pauseAudio.disabled = true;
-  stopAudio.disabled = true;
-});
-
-avs.player.on(AVS.Player.EventTypes.STOP, function () {
-  playAudio.disabled = true;
-  replayAudio.disabled = false;
-  pauseAudio.disabled = false;
-  stopAudio.disabled = false;
-});
-
-avs.player.on(AVS.Player.EventTypes.PAUSE, function () {
-  playAudio.disabled = false;
-  replayAudio.disabled = false;
-  pauseAudio.disabled = true;
-  stopAudio.disabled = true;
-});
-
-avs.player.on(AVS.Player.EventTypes.REPLAY, function () {
-  playAudio.disabled = true;
-  replayAudio.disabled = true;
-  pauseAudio.disabled = false;
-  stopAudio.disabled = false;
-});
+avs.player.on(AVS.Player.EventTypes.REPLAY, function () {});
 
 function log(message) {
   logOutput.innerHTML = '<li>LOG: ' + message + '</li>' + logOutput.innerHTML;
@@ -4848,38 +4793,7 @@ function logAudioBlob(blob, message) {
   });
 }
 
-// const loginBtn = document.getElementById('login');
-// const logoutBtn = document.getElementById('logout');
-var logOutput = document.getElementById('log');
-var audioLogOutput = document.getElementById('audioLog');
-var startRecording = document.getElementById('startRecording');
-var stopRecording = document.getElementById('stopRecording');
-var stopAudio = document.getElementById('stopAudio');
-var pauseAudio = document.getElementById('pauseAudio');
-var playAudio = document.getElementById('playAudio');
-var replayAudio = document.getElementById('replayAudio');
-
-// If using client secret
-// avs.getCodeFromUrl()
-//   .then(code => avs.getTokenFromCode(code))
-//   .then(token => localStorage.setItem('token', token))
-//   .then(refreshToken => localStorage.setItem('refreshToken', refreshToken))
-//   .then(() => avs.requestMic())
-//   .then(() => avs.refreshToken())
-//   .catch(() => {});
-
-// avs.getTokenFromUrl()
-// .then(() => avs.getToken())
-// .then(token => localStorage.setItem('token', token))
-// .then(() => avs.requestMic())
-// .catch(() => {
-//   const cachedToken = localStorage.getItem('token');
-//
-//   if (cachedToken) {
-//     avs.setToken(cachedToken);
-//     return avs.requestMic();
-//   }
-// });
+var startStopRecording = document.getElementById('startStopRecording');
 
 avs.refreshToken().then(function () {
   return avs.requestMic();
@@ -4906,11 +4820,11 @@ function logout() {
   });
 }
 
-startRecording.addEventListener('click', function () {
+startStopRecording.addEventListener('mousedown', function () {
   avs.startRecording();
 });
 
-stopRecording.addEventListener('click', function () {
+startStopRecording.addEventListener('mouseup', function () {
   avs.stopRecording().then(function (dataView) {
     avs.player.emptyQueue().then(function () {
       return avs.audioToBlob(dataView);
@@ -4928,22 +4842,6 @@ stopRecording.addEventListener('click', function () {
     //sendBlob(blob);
     sendAudio(dataView);
   });
-});
-
-stopAudio.addEventListener('click', function (event) {
-  avs.player.stop();
-});
-
-pauseAudio.addEventListener('click', function (event) {
-  avs.player.pause();
-});
-
-playAudio.addEventListener('click', function (event) {
-  avs.player.play();
-});
-
-replayAudio.addEventListener('click', function (event) {
-  avs.player.replay();
 });
 
 function sendBlob(blob) {
@@ -4986,6 +4884,193 @@ client.onmessage = function (e) {
     sendAudio(new DataView(flockArrayBuffer));
   }
 };
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)))
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 
 /***/ })
 /******/ ]);
